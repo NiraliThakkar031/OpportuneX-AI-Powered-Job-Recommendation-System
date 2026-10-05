@@ -1,9 +1,11 @@
 import Link from "next/link";
+import DashboardNav from "../components/dashboard/DashboardNav";
 
 export default function StartPage() {
   return (
-    <main className="route-screen route-screen-light">
-      <section className="route-choice-shell">
+    <main className="dashboard-shell route-dashboard-screen">
+      <DashboardNav />
+      <section className="route-choice-shell dashboard-route-card">
         <div className="route-choice-header">
           <span className="route-eyebrow">Choose your path</span>
           <h1>What do you want to do first?</h1>

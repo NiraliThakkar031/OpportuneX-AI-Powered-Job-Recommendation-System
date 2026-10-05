@@ -48,6 +48,8 @@ function unique(values: string[]): string[] {
 }
 
 export function normalizeProfile(profile: UserProfile): ExpandedProfile {
+  const preferredLocation = normalizeText(profile.preferredLocation || "India");
+
   return {
     education: normalizeText(profile.education),
     experience: Math.max(0, profile.experience),
@@ -55,7 +57,7 @@ export function normalizeProfile(profile: UserProfile): ExpandedProfile {
     preferredDomain: profile.preferredDomain
       ? normalizeText(profile.preferredDomain)
       : undefined,
-    preferredLocation: normalizeText(profile.preferredLocation),
+    preferredLocation: preferredLocation || "india",
     skills: unique(profile.skills.map(normalizeSkill)),
     certifications: unique((profile.certifications ?? []).map(normalizeText)),
     employmentType: profile.employmentType,

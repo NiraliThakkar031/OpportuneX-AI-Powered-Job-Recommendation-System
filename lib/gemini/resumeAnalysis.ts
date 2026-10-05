@@ -1,10 +1,10 @@
-import { ai } from "@/lib/gemini";
+import { getGeminiClient } from "@/lib/gemini";
 import { RESUME_PROMPT } from "@/prompts/resumePrompt";
 
 export async function analyzeResume(file: File): Promise<string> {
   const bytes = await file.arrayBuffer();
 
-  const response = await ai.models.generateContent({
+  const response = await getGeminiClient().models.generateContent({
     model: "gemini-2.5-flash",
     contents: [
       {

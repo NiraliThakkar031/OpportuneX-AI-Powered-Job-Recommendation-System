@@ -102,7 +102,7 @@ export async function fetchGreenhouseJobs(
           `https://boards-api.greenhouse.io/v1/boards/${board}/jobs`
         );
 
-        if (!res.ok) return [];
+        if (!res.ok) throw new Error(`Provider returned HTTP ${res.status}.`);
 
         const data = await res.json();
         console.log(board, data.jobs?.length ?? 0);
@@ -136,15 +136,14 @@ export async function fetchGreenhouseJobs(
       })
     );
 
+    const failed = responses.filter(result => result.status === "rejected");
+    if (failed.length === responses.length) throw new Error(`Greenhouse provider failed for all configured boards.`);
     return responses
       .filter(
-        (
-          result
-        ): result is PromiseFulfilledResult<JobPosting[]> =>
-          result.status === "fulfilled"
+        (result): result is PromiseFulfilledResult<JobPosting[]> => result.status === "fulfilled"
       )
       .flatMap(result => result.value);
-  } catch {
-    return [];
+  } catch (error) {
+    throw error instanceof Error ? error : new Error("Provider request failed.");
   }
 }

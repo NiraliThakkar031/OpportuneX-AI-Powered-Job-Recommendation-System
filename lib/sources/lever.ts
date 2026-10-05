@@ -119,7 +119,7 @@ export async function fetchLeverJobs(
         const url = `https://api.lever.co/v0/postings/${board}?mode=json`;
         const res = await fetch(url);
 
-        if (!res.ok) return [];
+        if (!res.ok) throw new Error(`Provider returned HTTP ${res.status}.`);
 
         const data = await res.json();
         if (!Array.isArray(data)) return [];
@@ -161,13 +161,14 @@ export async function fetchLeverJobs(
       })
     );
 
+    const failed = responses.filter(result => result.status === "rejected");
+    if (failed.length === responses.length) throw new Error(`Lever provider failed for all configured boards.`);
     return responses
       .filter(
-        (result): result is PromiseFulfilledResult<JobPosting[]> =>
-          result.status === "fulfilled"
+        (result): result is PromiseFulfilledResult<JobPosting[]> => result.status === "fulfilled"
       )
       .flatMap(result => result.value);
-  } catch {
-    return [];
+  } catch (error) {
+    throw error instanceof Error ? error : new Error("Provider request failed.");
   }
 }

@@ -10,12 +10,12 @@ function getCountryCode(location?: string): string {
   if (!location) return "in";
   const loc = location.toLowerCase();
   if (loc.includes("india") || loc === "in") return "in";
-  if (loc.includes("united states") || loc.includes("usa") || loc === "us") return "us";
-  if (loc.includes("united kingdom") || loc.includes("great britain") || loc === "uk" || loc === "gb") return "gb";
-  if (loc.includes("canada") || loc === "ca") return "ca";
-  if (loc.includes("australia") || loc === "au") return "au";
-  if (loc.includes("germany") || loc === "de") return "de";
-  if (loc.includes("france") || loc === "fr") return "fr";
+  if (loc.includes("united states") || loc.includes("usa") || loc === "us" || loc.includes("new york") || loc.includes("san francisco") || loc.includes("seattle") || loc.includes("california") || loc.includes("texas")) return "us";
+  if (loc.includes("united kingdom") || loc.includes("great britain") || loc === "uk" || loc === "gb" || loc.includes("london") || loc.includes("manchester")) return "gb";
+  if (loc.includes("canada") || loc === "ca" || loc.includes("toronto") || loc.includes("vancouver")) return "ca";
+  if (loc.includes("australia") || loc === "au" || loc.includes("sydney") || loc.includes("melbourne")) return "au";
+  if (loc.includes("germany") || loc === "de" || loc.includes("berlin") || loc.includes("munich")) return "de";
+  if (loc.includes("france") || loc === "fr" || loc.includes("paris")) return "fr";
   if (loc.includes("singapore") || loc === "sg") return "sg";
   return "in";
 }
@@ -25,7 +25,7 @@ export async function fetchAdzunaJobs(
   preferredLocation?: string
 ): Promise<JobPosting[]> {
   try {
-    if (!ADZUNA_APP_ID || !ADZUNA_APP_KEY) return [];
+    if (!ADZUNA_APP_ID || !ADZUNA_APP_KEY) throw new Error("Adzuna credentials are not configured.");
 
     const country = getCountryCode(preferredLocation);
     const url = `${ADZUNA_BASE_URL}/${country}/search/1?app_id=${ADZUNA_APP_ID}&app_key=${ADZUNA_APP_KEY}&what=${encodeURIComponent(
@@ -34,7 +34,7 @@ export async function fetchAdzunaJobs(
 
     const res = await fetch(url);
 
-    if (!res.ok) return [];
+    if (!res.ok) throw new Error(`Adzuna API returned HTTP ${res.status}.`);
 
     const data = await res.json();
 
@@ -53,7 +53,7 @@ export async function fetchAdzunaJobs(
     );
 
     return jobs;
-  } catch {
-    return [];
+  } catch (error) {
+    throw error instanceof Error ? error : new Error("Adzuna request failed.");
   }
 }

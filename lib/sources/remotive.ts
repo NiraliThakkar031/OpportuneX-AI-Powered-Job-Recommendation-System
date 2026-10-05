@@ -78,7 +78,7 @@ export async function fetchRemotiveJobs(
     const url = `${REMOTIVE_API_URL}?search=${encodeURIComponent(query)}`;
     const res = await fetch(url);
 
-    if (!res.ok) return [];
+    if (!res.ok) throw new Error(`Remotive API returned HTTP ${res.status}.`);
 
     const data = await res.json();
     const jobs = (data.jobs || [])
@@ -102,7 +102,7 @@ export async function fetchRemotiveJobs(
       );
 
     return jobs;
-  } catch {
-    return [];
+  } catch (error) {
+    throw error instanceof Error ? error : new Error("Remotive request failed.");
   }
 }

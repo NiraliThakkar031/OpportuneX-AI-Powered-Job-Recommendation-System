@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "OpportuneX",
   description:
-    "OpportuneX is a job discovery app with matched openings pages, mixed-source backend fetching, and a guided assistant experience.",
+    "OpportuneX is an AI career platform with database-first job discovery, personalized matching, skill-gap analysis, career roadmaps, and guided career assistance.",
 };
 
 export default function RootLayout({

@@ -1,6 +1,7 @@
 import { EMPLOYMENT_TYPES, WORKPLACE_TYPES } from "./constants";
 export type EmploymentType = (typeof EMPLOYMENT_TYPES)[number];
 export type WorkplaceType = (typeof WORKPLACE_TYPES)[number];
+
 export interface UserProfile {
   education: string;
   experience: number;
@@ -35,7 +36,11 @@ export interface JobPosting {
   description: string;
   applyUrl: string;
   source: string;
+  sourceType?: string;
+  officialSource?: boolean;
   postedDate?: string;
+  lastCheckedAt?: string;
+  active?: boolean;
   domain?: string;
   requiredEducation?: string;
   minimumExperience?: number;
@@ -46,18 +51,18 @@ export interface JobPosting {
   workplaceType?: WorkplaceType;
 }
 
-export interface ScoreBreakdown {
-  education: number;
-  skills: number;
-  experience: number;
-  preferredRoles: number;
-  preferredDomain: number;
-  employmentType: number;
-  workplacePreference: number;
-  preferredLocation: number;
-  certifications: number;
-  freshness: number;
-  total: number;
+export interface SemanticBreakdown {
+  semanticSimilarity: number;
+  roleSimilarity?: number;
+  skillSimilarity?: number;
+  domainSimilarity?: number;
+  fullSimilarity?: number;
+  hybridVectorScore?: number;
+  rerankRelevance: number;
+  roleAffinity?: number;
+  domainFit?: number;
+  requiredSkillFit?: number;
+  eligibility: number;
 }
 
 export interface MatchSummary {
@@ -68,9 +73,14 @@ export interface MatchSummary {
 export interface RecommendationResult {
   job: JobPosting;
   matchPercentage: number;
-  score: ScoreBreakdown;
+  confidence: "high" | "medium" | "low";
+  score: SemanticBreakdown;
   matchedSkillCount: number;
   totalRequiredSkills: number;
+  matchedSkills: string[];
+  missingSkills: string[];
+  reasonCodes: string[];
+  dataCompleteness: number;
   matchSummary: MatchSummary[];
   explanation: string;
 }

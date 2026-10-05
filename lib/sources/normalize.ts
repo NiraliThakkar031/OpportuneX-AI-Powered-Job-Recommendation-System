@@ -1,4 +1,5 @@
 import { JobPosting } from "../types";
+import { inferJobDomain } from "./domainClassifier";
 
 function normalizeText(value: unknown): string {
   if (typeof value !== "string") return "";
@@ -11,7 +12,7 @@ function normalizeArray(value: unknown): string[] {
 }
 
 export function normalizeJob(job: Partial<JobPosting>): JobPosting {
-  return {
+  const normalizedJob: JobPosting = {
     id: normalizeText(job.id),
     title: normalizeText(job.title),
     company: normalizeText(job.company),
@@ -29,6 +30,8 @@ export function normalizeJob(job: Partial<JobPosting>): JobPosting {
     employmentType: job.employmentType,
     workplaceType: job.workplaceType
   };
+  normalizedJob.domain = inferJobDomain(normalizedJob);
+  return normalizedJob;
 }
 
 export function removeDuplicateJobs(jobs: JobPosting[]): JobPosting[] {

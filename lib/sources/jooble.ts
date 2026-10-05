@@ -9,7 +9,7 @@ export async function fetchJoobleJobs(
   preferredLocation?: string
 ): Promise<JobPosting[]> {
   try {
-    if (!JOOBLE_API_KEY) return [];
+    if (!JOOBLE_API_KEY) throw new Error("Jooble API key is not configured.");
 
     const res = await fetch(JOOBLE_API_URL, {
       method: "POST",
@@ -24,7 +24,7 @@ export async function fetchJoobleJobs(
       })
     });
 
-    if (!res.ok) return [];
+    if (!res.ok) throw new Error(`Jooble API returned HTTP ${res.status}.`);
 
     const data = await res.json();
 
@@ -42,7 +42,7 @@ export async function fetchJoobleJobs(
     );
 
     return jobs;
-  } catch {
-    return [];
+  } catch (error) {
+    throw error instanceof Error ? error : new Error("Jooble request failed.");
   }
 }

@@ -1,0 +1,202 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  profile       Profile?
+  accounts      Account[]
+  savedJobs     SavedJob[]
+  activities    JobActivity[]
+  alerts        JobAlert[]
+  sessions      Session[]
+  interviewAttempts InterviewAttempt[]
+}
+
+model JobSyncState {
+  id             String   @id
+  source         String   @unique
+  lastStartedAt  DateTime?
+  lastCompletedAt DateTime?
+  lastSuccessAt  DateTime?
+  lastError      String?  @db.Text
+  lastFetched    Int      @default(0)
+  lastUnique     Int      @default(0)
+  lastInserted   Int      @default(0)
+  lastUpdated    Int      @default(0)
+  lastDeactivated Int     @default(0)
+  durationMs     Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  @@index([lastSuccessAt])
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([provider, providerAccountId])
+}
+
+model Profile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  education           String?
+  degree              String?
+  specialization      String?
+  graduationYear      Int?
+  experienceYears     Float    @default(0)
+  skills              Json?
+  certifications      Json?
+  preferredRoles      Json?
+  preferredDomains    Json?
+  preferredLocations  Json?
+  employmentTypes     Json?
+  workplacePreference String?
+  sectors             Json?
+  country             String   @default("India")
+  willingToRelocate   Boolean  @default(false)
+  resumeText          String?  @db.Text
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Job {
+  id                    String   @id
+  title                 String
+  company               String
+  location              String
+  description           String   @db.Text
+  applyUrl              String
+  source                String
+  sourceJobId           String?
+  sourceType            String?
+  officialSource        Boolean  @default(false)
+  domain                String?
+  subdomain             String?
+  requiredEducation     String?
+  minimumExperience     Float?
+  requiredSkills        Json?
+  preferredSkills       Json?
+  requiredCertifications Json?
+  employmentType        String?
+  workplaceType         String?
+  postedDate            DateTime?
+  firstSeenAt            DateTime @default(now())
+  lastSeenAt             DateTime @default(now())
+  lastCheckedAt          DateTime @default(now())
+  contentHash            String?
+  qualityScore           Float    @default(0)
+  embedding              Json?
+  embeddingRole          Json?
+  embeddingSkills        Json?
+  embeddingDomain        Json?
+  embeddingStatus        String   @default("pending")
+  embeddingModel         String?
+  embeddingVersion       String?
+  embeddingUpdatedAt     DateTime?
+  embeddingAttempts      Int      @default(0)
+  embeddingNextAttemptAt DateTime?
+  embeddingError         String?  @db.Text
+  active                 Boolean  @default(true)
+  savedBy                SavedJob[]
+  activities             JobActivity[]
+  recommendations       Recommendation[]
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  @@index([source, sourceJobId])
+  @@index([active, lastCheckedAt])
+  @@index([location])
+}
+
+model SavedJob {
+  id        String   @id @default(cuid())
+  userId    String
+  jobId     String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  @@unique([userId, jobId])
+}
+
+model JobActivity {
+  id        String   @id @default(cuid())
+  userId    String
+  jobId     String
+  type      String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  @@index([userId, type, createdAt])
+}
+
+model InterviewAttempt {
+  id        String   @id @default(cuid())
+  userId    String
+  domain    String
+  score     Int
+  total     Int
+  takenAt   DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, takenAt])
+}
+
+model JobAlert {
+  id          String   @id @default(cuid())
+  userId      String
+  role        String
+  location    String?
+  minMatch    Int      @default(80)
+  enabled     Boolean  @default(true)
+  frequency   String   @default("daily")
+  lastSentAt  DateTime?
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Recommendation {
+  id            String   @id @default(cuid())
+  userId        String
+  jobId         String
+  score         Float
+  breakdown     Json
+  matchedSkills Json
+  missingSkills Json
+  createdAt     DateTime @default(now())
+  job           Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  @@index([userId, score])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+}

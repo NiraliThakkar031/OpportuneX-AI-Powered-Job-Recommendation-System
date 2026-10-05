@@ -1,0 +1,6 @@
+import { NextRequest, NextResponse } from "next/server";
+import { PDFParse } from "pdf-parse";
+const MAX=5*1024*1024;
+export async function POST(req:NextRequest){
+ try{const form=await req.formData();const file=form.get("file");if(!(file instanceof File))return NextResponse.json({success:false,error:"No file uploaded."},{status:400});if(file.size>MAX)return NextResponse.json({success:false,error:"Files must be smaller than 5 MB."},{status:400});const type=file.type||"";let text="";if(type==="application/pdf"){const p=new PDFParse({data:Buffer.from(await file.arrayBuffer())});const parsed=await p.getText();await p.destroy();text=parsed.text||""}else if(type.startsWith("text/")||["application/json","application/csv"].includes(type)){text=await file.text()}else{return NextResponse.json({success:false,error:"Upload a PDF, TXT, Markdown, CSV or JSON file."},{status:415})}if(!text.trim())return NextResponse.json({success:false,error:"The file does not contain readable text."},{status:422});return NextResponse.json({success:true,fileName:file.name,text:text.slice(0,14000)})}catch(e){console.error("Assistant file extraction failed",e);return NextResponse.json({success:false,error:"We could not read that file."},{status:500})}
+}
